@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #111113;
+  --muted: #6b7280;
+}
+
+body {
+  color: var(--ink);
+  background: #fafafa;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 15% 10%, rgba(251, 191, 36, 0.12), transparent 28%), radial-gradient(circle at 90% 80%, rgba(20, 184, 166, 0.08), transparent 30%);
+}
+
+.animate-rise {
+  animation: rise-in 500ms ease-out both;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-md bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-5 py-2.5 text-sm font-medium text-neutral-900 transition hover:bg-neutral-100;
+}
+
+.input {
+  @apply w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900;
+}
+
+.label {
+  @apply mb-1 block text-xs font-medium uppercase tracking-wide text-neutral-500;
+}
+
+.card {
+  @apply rounded-lg border border-neutral-200 bg-white shadow-sm;
+}

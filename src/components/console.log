@@ -1,0 +1,53 @@
+export default async function SuccessPage({ searchParams }) {
+  console.log('1. Page render started');
+  
+  const resolvedParams = await searchParams;
+  const sessionId = resolvedParams?.session_id;
+  console.log('2. Session ID:', sessionId);
+
+  let paid = false;
+  let total = null;
+
+  if (sessionId) {
+    try {
+      if (supabaseAdmin) {
+        console.log('3. Attempting Supabase query...');
+        
+        // Timeout protection: don't let Supabase hang for more than 3 seconds
+        const { data: order, error } = await Promise.race([
+          supabaseAdmin
+            .from('orders')
+            .select('status, total')
+            .eq('stripe_session_id', sessionId)
+            .maybeSingle(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase timeout')), 3000))
+        ]);
+
+        console.log('4. Supabase query completed. Result:', order, error);
+
+        if (order?.status === 'paid') {
+          paid = true;
+          total = Number(order.total);
+        }
+      } else {
+        console.log('3. supabaseAdmin is not initialized, skipping DB check');
+      }
+
+      if (!paid && isStripeConfigured()) {
+        console.log('5. Calling Stripe API...');
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        console.log('6. Stripe response received');
+        
+        paid = session.payment_status === 'paid';
+        total = (session.amount_total || 0) / 100;
+      }
+    } catch (err) {
+      console.error('Error during execution:', err.message);
+    }
+  }
+
+  console.log('7. Rendering page response');
+  return (
+    // ... your JSX code
+  );
+}
