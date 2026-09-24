@@ -4,6 +4,15 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export const runtime = 'nodejs';
 
+function formatShippingAddress(address) {
+  if (!address) return null;
+  return [
+    address.line1,
+    [address.postal_code, address.city].filter(Boolean).join(' '),
+    address.country
+  ].filter(Boolean).join(', ') || null;
+}
+
 export async function POST(req) {
   if (!isStripeConfigured() || !process.env.STRIPE_WEBHOOK_SECRET || !supabaseAdmin) {
     return NextResponse.json({ error: 'Webhook is not configured' }, { status: 500 });
@@ -29,9 +38,9 @@ export async function POST(req) {
           status: reserved ? 'paid' : 'payment_review',
           total: session.amount_total ? session.amount_total / 100 : undefined,
           customer_email: session.customer_details?.email || session.customer_email || null,
-          customer_name: session.shipping_details?.name || session.customer_details?.name || null,
+          customer_name: session.customer_details?.name || session.shipping_details?.name || null,
           customer_phone: session.customer_details?.phone || null,
-          shipping_address: session.shipping_details?.address || null,
+          shipping_address: formatShippingAddress(session.shipping_details?.address),
           updated_at: new Date().toISOString()
         }).eq('id', orderId);
       }

@@ -10,7 +10,12 @@ export default function LoginPage() {
   const [mode, setMode] = useState('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [streetAddress, setStreetAddress] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('SE');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +33,16 @@ export default function LoginPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name } }
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              street_address: streetAddress,
+              postal_code: postalCode,
+              city,
+              country
+            }
+          }
         });
         if (error) throw error;
         if (!data.session) {
@@ -52,10 +66,38 @@ export default function LoginPage() {
       <h1 className="text-2xl font-bold tracking-tight">{mode === 'signin' ? 'Sign in' : 'Create account'}</h1>
       <form onSubmit={submit} className="mt-6 space-y-4">
         {mode === 'signup' && (
-          <div>
-            <label className="label">Full name</label>
-            <input className="input" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
+          <>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label">First name</label>
+                <input className="input" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+              </div>
+              <div>
+                <label className="label">Last name</label>
+                <input className="input" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+              </div>
+            </div>
+            <div>
+              <label className="label">Street address</label>
+              <input className="input" value={streetAddress} onChange={(e) => setStreetAddress(e.target.value)} required />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label">Postal code</label>
+                <input className="input" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required />
+              </div>
+              <div>
+                <label className="label">City</label>
+                <input className="input" value={city} onChange={(e) => setCity(e.target.value)} required />
+              </div>
+            </div>
+            <div>
+              <label className="label">Country</label>
+              <select className="input" value={country} onChange={(e) => setCountry(e.target.value)} required>
+                <option value="SE">Sweden</option>
+              </select>
+            </div>
+          </>
         )}
         <div>
           <label className="label">Email</label>

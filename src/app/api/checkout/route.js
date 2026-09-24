@@ -108,12 +108,36 @@ export async function POST(req) {
 
   const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
+  const metadata = user?.user_metadata || {};
+  const customerName = [metadata.first_name, metadata.last_name].filter(Boolean).join(' ');
+  const hasShippingProfile = customerName && metadata.street_address && metadata.postal_code && metadata.city && metadata.country;
+  let stripeCustomer;
+  if (user && hasShippingProfile) {
+    try {
+      stripeCustomer = await stripe.customers.create({
+        email: user.email,
+        name: customerName,
+        shipping: {
+          name: customerName,
+          address: {
+            line1: metadata.street_address,
+            postal_code: metadata.postal_code,
+            city: metadata.city,
+            country: metadata.country.toUpperCase()
+          }
+        }
+      });
+    } catch (error) {
+      return NextResponse.json({ error: `Could not prepare customer details: ${error.message}` }, { status: 500 });
+    }
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items,
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/cart`,
-    customer_email: user?.email || undefined,
+    ...(stripeCustomer ? { customer: stripeCustomer.id } : { customer_email: user?.email || undefined, customer_creation: 'always' }),
     phone_number_collection: { enabled: true },
     shipping_address_collection: { allowed_countries: ['SE'] },
     metadata: { order_id: order.id }

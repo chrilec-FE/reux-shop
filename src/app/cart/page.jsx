@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCart } from '@/components/CartContext';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/format';
@@ -14,6 +14,37 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [coupon, setCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
+  const [profile, setProfile] = useState(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    const loadProfile = async () => {
+      const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+      if (!active) return;
+      if (!session) {
+        setProfileLoading(false);
+        return;
+      }
+      const metadata = session.user.user_metadata || {};
+      const savedProfile = {
+        first_name: metadata.first_name || '',
+        last_name: metadata.last_name || '',
+        street_address: metadata.street_address || '',
+        postal_code: metadata.postal_code || '',
+        city: metadata.city || '',
+        country: metadata.country || 'SE'
+      };
+      setProfile(savedProfile);
+      setEditingProfile(!Object.values(savedProfile).every(Boolean));
+      setProfileLoading(false);
+    };
+    loadProfile();
+    return () => { active = false; };
+  }, []);
 
   const total = items.reduce((s, i) => s + Number(i.price) * i.qty, 0);
 
@@ -38,6 +69,29 @@ export default function CartPage() {
     } catch (e) {
       setError(e.message);
       setLoading(false);
+    }
+  };
+
+  const saveProfile = async (event) => {
+    event.preventDefault();
+    setProfileSaving(true);
+    setProfileError('');
+    try {
+      const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+      if (!session) throw new Error('Sign in to update your details');
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify(profile)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save your details');
+      setProfile(data.profile);
+      setEditingProfile(false);
+    } catch (e) {
+      setProfileError(e.message);
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -113,6 +167,34 @@ export default function CartPage() {
             <span>Total</span>
             <span>{formatCurrency(total - discount)}</span>
           </div>
+          {!profileLoading && profile && (
+            <div className="mt-6 border-t border-neutral-200 pt-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-semibold">Order details</h2>
+                  {!editingProfile && <p className="mt-2 text-sm leading-relaxed text-neutral-600">Shipping to: {profile.first_name} {profile.last_name}, {profile.street_address}, {profile.postal_code} {profile.city}, {profile.country}</p>}
+                  {editingProfile && <p className="mt-1 text-sm text-neutral-500">Add your shipping details before paying.</p>}
+                </div>
+                {!editingProfile && <button type="button" className="text-sm underline" onClick={() => setEditingProfile(true)}>Edit</button>}
+              </div>
+              {editingProfile && (
+                <form onSubmit={saveProfile} className="mt-4 space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input className="input" placeholder="First name" value={profile.first_name} onChange={(e) => setProfile({ ...profile, first_name: e.target.value })} required />
+                    <input className="input" placeholder="Last name" value={profile.last_name} onChange={(e) => setProfile({ ...profile, last_name: e.target.value })} required />
+                  </div>
+                  <input className="input" placeholder="Street address" value={profile.street_address} onChange={(e) => setProfile({ ...profile, street_address: e.target.value })} required />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input className="input" placeholder="Postal code" value={profile.postal_code} onChange={(e) => setProfile({ ...profile, postal_code: e.target.value })} required />
+                    <input className="input" placeholder="City" value={profile.city} onChange={(e) => setProfile({ ...profile, city: e.target.value })} required />
+                  </div>
+                  <input className="input" placeholder="Country" value={profile.country} onChange={(e) => setProfile({ ...profile, country: e.target.value })} required />
+                  {profileError && <p className="text-sm text-red-600">{profileError}</p>}
+                  <button className="btn-secondary w-full" disabled={profileSaving}>{profileSaving ? 'Saving…' : 'Save details'}</button>
+                </form>
+              )}
+            </div>
+          )}
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
           <button onClick={checkout} disabled={loading} className="btn-primary mt-6 w-full">
             {loading ? 'Redirecting to Stripe…' : 'Checkout with Stripe'}

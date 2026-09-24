@@ -5,6 +5,16 @@ import { formatCurrency } from '@/lib/format';
 
 const STATUSES = ['pending', 'paid', 'payment_review', 'shipped', 'canceled', 'refunded'];
 
+function formatAddress(address) {
+  if (!address) return '—';
+  if (typeof address === 'string') return address;
+  return [
+    address.line1,
+    [address.postal_code, address.city].filter(Boolean).join(' '),
+    address.country
+  ].filter(Boolean).join(', ') || '—';
+}
+
 export default function SalesManager() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -104,11 +114,11 @@ export default function SalesManager() {
               </li>
             ))}
           </ul>
-          <div className="mt-3 space-y-1 text-sm text-neutral-500">
-            {o.customer_name && <p><span className="font-medium text-neutral-700">Customer:</span> {o.customer_name}</p>}
+          <div className="mt-3 grid gap-3 text-sm text-neutral-500 sm:grid-cols-2">
+            <p><span className="font-medium text-neutral-700">Customer:</span> {o.customer_name || o.customer_email || '—'}</p>
+            <p><span className="font-medium text-neutral-700">Address:</span> {formatAddress(o.shipping_address)}</p>
             {o.customer_email && <p><span className="font-medium text-neutral-700">Email:</span> {o.customer_email}</p>}
             {o.customer_phone && <p><span className="font-medium text-neutral-700">Phone:</span> {o.customer_phone}</p>}
-            {o.shipping_address && <p><span className="font-medium text-neutral-700">Address:</span> {[o.shipping_address.line1, o.shipping_address.line2, [o.shipping_address.postal_code, o.shipping_address.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>}
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
             <input className="input" placeholder="Tracking number" defaultValue={o.tracking_number || ''} onChange={(e) => setTracking((old) => ({ ...old, [o.id]: { ...(old[o.id] || {}), number: e.target.value } }))} />
