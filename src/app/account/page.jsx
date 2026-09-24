@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { formatCurrency } from '@/lib/format';
 
 export default function AccountPage() {
   const [user, setUser] = useState(null);
@@ -77,7 +78,7 @@ export default function AccountPage() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-medium">${Number(o.total).toFixed(2)}</p>
+                <p className="font-medium">{formatCurrency(o.total)}</p>
                 <p className={`text-xs ${o.status === 'paid' || o.status === 'shipped' ? 'text-green-600' : 'text-amber-600'}`}>{o.status.replace('_', ' ')}</p>
                 {o.tracking_url && <a href={o.tracking_url} target="_blank" rel="noreferrer" className="mt-1 block text-xs underline">Track shipment</a>}
                 {o.tracking_number && <p className="text-xs text-neutral-400">{o.tracking_number}</p>}

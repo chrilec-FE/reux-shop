@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { stripe, isStripeConfigured } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import ClearCart from '@/components/ClearCart';
+import { formatCurrency } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,7 +61,7 @@ export default async function SuccessPage({ searchParams }) {
     </h1>
     <p className="mt-3 text-neutral-500">
     {paid
-      ? `Your payment of $${total?.toFixed(2)} was successful. Your order confirmation will be sent to your email.`
+      ? `Your payment of ${formatCurrency(total)} was successful. Your order confirmation will be sent to your email.`
       : 'We are confirming your payment. Keep this page open briefly, or check your account for the final order status.'}
       </p>
       <Link href="/shop" className="btn-primary mt-8">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatCurrency } from '@/lib/format';
 
 const STATUSES = ['pending', 'paid', 'payment_review', 'shipped', 'canceled', 'refunded'];
 
@@ -49,7 +50,7 @@ export default function SalesManager() {
               <p className="text-sm text-neutral-500">Order {o.id.slice(0, 8)}…</p>
             </div>
             <div className="flex items-center gap-3">
-              <p className="font-semibold">${Number(o.total).toFixed(2)}</p>
+              <p className="font-semibold">{formatCurrency(o.total)}</p>
               <select
                 value={o.status}
                 onChange={(e) => setStatus(o.id, e.target.value)}
@@ -64,7 +65,7 @@ export default function SalesManager() {
           <ul className="mt-3 space-y-1 text-sm text-neutral-600">
             {o.items.map((i, idx) => (
               <li key={idx}>
-                {i.qty}× {i.name}{i.size ? ` (size ${i.size})` : ''} — ${(Number(i.price) * i.qty).toFixed(2)}
+                {i.qty}× {i.name}{i.size ? ` (size ${i.size})` : ''} — {formatCurrency(Number(i.price) * i.qty)}
               </li>
             ))}
           </ul>

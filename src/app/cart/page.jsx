@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useCart } from '@/components/CartContext';
 import { supabase } from '@/lib/supabase';
+import { formatCurrency } from '@/lib/format';
 
 export default function CartPage() {
   const { items, setQty, remove } = useCart();
@@ -75,7 +76,7 @@ export default function CartPage() {
                     <p className="font-medium">{i.name}</p>
                     {i.size && <p className="text-sm text-neutral-500">Size: {i.size}</p>}
                   </div>
-                  <p className="font-medium">${(Number(i.price) * i.qty).toFixed(2)}</p>
+                  <p className="font-medium">{formatCurrency(Number(i.price) * i.qty)}</p>
                 </div>
                 <div className="mt-auto flex items-center gap-3">
                   <input
@@ -96,7 +97,7 @@ export default function CartPage() {
         <div className="card h-fit p-6">
           <div className="flex justify-between text-sm text-neutral-600">
             <span>Subtotal</span>
-            <span>${total.toFixed(2)}</span>
+            <span>{formatCurrency(total)}</span>
           </div>
           <div className="mt-2 flex justify-between text-sm text-neutral-600">
             <span>Shipping</span>
@@ -106,11 +107,11 @@ export default function CartPage() {
             <input className="input" placeholder="Coupon code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} />
             <button type="button" className="btn-secondary" onClick={applyCoupon}>Apply</button>
           </div>
-          {coupon && <p className="mt-2 text-sm text-green-700">{coupon.code} applied: -${discount.toFixed(2)}</p>}
+          {coupon && <p className="mt-2 text-sm text-green-700">{coupon.code} applied: -{formatCurrency(discount)}</p>}
           {couponError && <p className="mt-2 text-sm text-red-600">{couponError}</p>}
           <div className="mt-4 flex justify-between border-t border-neutral-200 pt-4 font-semibold">
             <span>Total</span>
-            <span>${(total - discount).toFixed(2)}</span>
+            <span>{formatCurrency(total - discount)}</span>
           </div>
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
           <button onClick={checkout} disabled={loading} className="btn-primary mt-6 w-full">

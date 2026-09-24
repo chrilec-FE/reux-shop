@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { formatCurrency } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,7 @@ export default async function AdminDashboard() {
   }
 
   const cards = [
-    { label: 'Revenue (paid)', value: `$${stats.revenue.toFixed(2)}` },
+    { label: 'Revenue (paid)', value: formatCurrency(stats.revenue) },
     { label: 'Orders', value: stats.orders },
     { label: 'Pending payments', value: stats.pending },
     { label: 'Products', value: stats.products }
@@ -59,7 +60,7 @@ export default async function AdminDashboard() {
                 <tr key={o.id}>
                   <td className="px-4 py-3">{new Date(o.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-neutral-600">{o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}</td>
-                  <td className="px-4 py-3 font-medium">${Number(o.total).toFixed(2)}</td>
+                  <td className="px-4 py-3 font-medium">{formatCurrency(o.total)}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs ${o.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                       {o.status}

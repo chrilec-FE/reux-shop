@@ -2,9 +2,13 @@
 
 import Link from 'next/link';
 import { useCart } from './CartContext';
+import { useState } from 'react';
+import AccountDrawer from './AccountDrawer';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
   const { count } = useCart();
+  const [accountOpen, setAccountOpen] = useState(false);
 
   return (
     <header className="border-b border-neutral-200 bg-white">
@@ -23,9 +27,11 @@ export default function Navbar() {
             )}
           </Link>
           <Link href="/wishlist" className="text-neutral-600 hover:text-neutral-900">Wishlist</Link>
-          <Link href="/account" className="text-neutral-600 hover:text-neutral-900">Account</Link>
+          <button onClick={() => setAccountOpen(true)} className="text-neutral-600 hover:text-neutral-900">Account</button>
+          <ThemeToggle />
         </nav>
       </div>
+      <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} />
     </header>
   );
 }

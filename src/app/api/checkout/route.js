@@ -62,7 +62,7 @@ export async function POST(req) {
     return {
       quantity: i.qty,
       price_data: {
-        currency: 'usd',
+        currency: 'sek',
         unit_amount: Math.round(Number(p.price) * 100),
         product_data: {
           name: p.name,
@@ -115,7 +115,7 @@ export async function POST(req) {
     cancel_url: `${origin}/cart`,
     customer_email: user?.email || undefined,
     phone_number_collection: { enabled: true },
-    shipping_address_collection: { allowed_countries: ['US', 'CA'] },
+    shipping_address_collection: { allowed_countries: ['SE'] },
     metadata: { order_id: order.id }
   });
 

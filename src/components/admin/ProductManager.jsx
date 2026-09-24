@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { formatCurrency } from '@/lib/format';
 
 const empty = { name: '', price: '', category: 'T-Shirts', sizes: 'S,M,L,XL', stock: '0', image_url: '', description: '' };
 
@@ -86,7 +87,7 @@ export default function ProductManager() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Price (USD)</label>
+            <label className="label">Price (SEK)</label>
             <input className="input" type="number" step="0.01" min="0" value={form.price} onChange={set('price')} required />
           </div>
           <div>
@@ -129,7 +130,7 @@ export default function ProductManager() {
               <p className="truncate font-medium">{p.name}</p>
               <p className="text-sm text-neutral-500">{p.category} · {p.stock} in stock</p>
             </div>
-            <p className="font-medium">${Number(p.price).toFixed(2)}</p>
+            <p className="font-medium">{formatCurrency(p.price)}</p>
             <button onClick={() => edit(p)} className="text-sm underline">Edit</button>
             <button onClick={() => remove(p.id)} className="text-sm text-red-600 underline">Delete</button>
           </div>

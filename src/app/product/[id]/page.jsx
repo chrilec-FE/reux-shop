@@ -4,6 +4,7 @@ import { getProduct } from '@/lib/products';
 import AddToCart from '@/components/AddToCart';
 import WishlistButton from '@/components/WishlistButton';
 import ProductReviews from '@/components/ProductReviews';
+import { formatCurrency } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,7 @@ export default async function ProductPage({ params }) {
       <div>
         <p className="text-[11px] font-medium uppercase tracking-wide text-neutral-400">{product.category}</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight">{product.name}</h1>
-        <p className="mt-3 text-xl text-neutral-700">${Number(product.price).toFixed(2)}</p>
+        <p className="mt-3 text-xl text-neutral-700">{formatCurrency(product.price)}</p>
         <p className="mt-6 leading-relaxed text-neutral-600">{product.description}</p>
         <div className="mt-8 space-y-3">
           <AddToCart product={product} />
