@@ -1,4 +1,5 @@
 import { supabaseAdmin } from './supabase-admin';
+import { PRODUCT_CATEGORIES } from './catalog';
 
 export async function getProducts({ category, search } = {}) {
   if (!supabaseAdmin) return [];
@@ -18,5 +19,6 @@ export async function getProduct(id) {
 
 export async function getCategories() {
   const products = await getProducts();
-  return ['All', ...new Set(products.map((p) => p.category).filter(Boolean))];
+  const existingCategories = products.map((p) => p.category).filter(Boolean);
+  return ['All', ...PRODUCT_CATEGORIES, ...new Set(existingCategories.filter((category) => !PRODUCT_CATEGORIES.includes(category)))];
 }

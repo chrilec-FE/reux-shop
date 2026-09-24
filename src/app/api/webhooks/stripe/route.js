@@ -29,6 +29,8 @@ export async function POST(req) {
           status: reserved ? 'paid' : 'payment_review',
           total: session.amount_total ? session.amount_total / 100 : undefined,
           customer_email: session.customer_details?.email || session.customer_email || null,
+          customer_name: session.shipping_details?.name || session.customer_details?.name || null,
+          customer_phone: session.customer_details?.phone || null,
           shipping_address: session.shipping_details?.address || null,
           updated_at: new Date().toISOString()
         }).eq('id', orderId);

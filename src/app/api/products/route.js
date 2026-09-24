@@ -22,7 +22,7 @@ export async function POST(req) {
 
   const { data, error } = await supabaseAdmin
     .from('products')
-    .insert({ name: name.trim(), price: Number(price), description: description || '', category: category || 'Uncategorized', sizes: Array.isArray(sizes) ? sizes : [], stock: Number(stock ?? 0), image_url: image_url || '' })
+    .insert({ name: name.trim(), price: Number(price), description: description || '', category: category || 'Men', sizes: Array.isArray(sizes) ? sizes : [], stock: Number(stock ?? 0), image_url: image_url || '' })
     .select()
     .single();
 

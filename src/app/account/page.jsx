@@ -76,6 +76,7 @@ export default function AccountPage() {
                 <p className="text-neutral-500">
                   {o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}
                 </p>
+                {o.shipping_address && <p className="mt-1 text-xs text-neutral-400">Ship to: {[o.shipping_address.line1, o.shipping_address.line2, [o.shipping_address.postal_code, o.shipping_address.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>}
               </div>
               <div className="text-right">
                 <p className="font-medium">{formatCurrency(o.total)}</p>

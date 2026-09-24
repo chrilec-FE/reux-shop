@@ -35,7 +35,7 @@ export default async function Shop({ searchParams }) {
       </div>
       {products.length === 0 && (
         <p className="mt-8 rounded-lg border border-dashed border-neutral-300 p-10 text-center text-neutral-500">
-          Nothing in this category yet.
+          {search ? `No products found for “${search}”.` : 'Nothing in this category yet.'}
         </p>
       )}
     </div>

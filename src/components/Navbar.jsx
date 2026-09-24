@@ -16,6 +16,11 @@ export default function Navbar() {
         <Link href="/" className="text-xl font-bold tracking-tight">
           Re<span className="text-neutral-400">UX</span>
         </Link>
+        <form action="/shop" className="mx-6 hidden min-w-0 max-w-xs flex-1 gap-2 sm:flex">
+          <label htmlFor="nav-search" className="sr-only">Search products</label>
+          <input id="nav-search" name="search" className="input h-9 min-w-0 flex-1" placeholder="Search products" />
+          <button type="submit" className="btn-secondary h-9 px-3">Search</button>
+        </form>
         <nav className="flex items-center gap-6 text-sm font-medium">
           <Link href="/shop" className="text-neutral-600 hover:text-neutral-900">Shop</Link>
           <Link href="/cart" className="relative text-neutral-600 hover:text-neutral-900">

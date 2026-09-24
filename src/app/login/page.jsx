@@ -25,17 +25,23 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { data: { full_name: name } }
         });
         if (error) throw error;
+        if (!data.session) {
+          setError('Account created. Check your email to confirm your address, then sign in.');
+          return;
+        }
       }
       router.replace('/account');
       router.refresh();
     } catch (err) {
-      setError(err.message);
+      setError(err.message === 'Email not confirmed'
+        ? 'Please confirm your email address before signing in.'
+        : err.message);
     } finally {
       setLoading(false);
     }

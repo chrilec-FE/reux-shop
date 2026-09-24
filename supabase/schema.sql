@@ -6,7 +6,7 @@ create table if not exists public.products (
   name text not null,
   description text default '',
   price numeric(10,2) not null check (price >= 0),
-  category text default 'Uncategorized',
+  category text default 'Men',
   sizes text[] default '{}',
   stock integer not null default 0 check (stock >= 0),
   image_url text default '',
@@ -22,6 +22,8 @@ create table if not exists public.orders (
   status text not null default 'pending',
   stripe_session_id text,
   customer_email text,
+  customer_name text,
+  customer_phone text,
   shipping_address jsonb,
   tracking_number text,
   tracking_url text,
@@ -34,6 +36,8 @@ create table if not exists public.orders (
 
 alter table public.products add column if not exists updated_at timestamptz default now();
 alter table public.orders add column if not exists customer_email text;
+alter table public.orders add column if not exists customer_name text;
+alter table public.orders add column if not exists customer_phone text;
 alter table public.orders add column if not exists shipping_address jsonb;
 alter table public.orders add column if not exists inventory_reserved boolean not null default false;
 alter table public.orders add column if not exists updated_at timestamptz default now();

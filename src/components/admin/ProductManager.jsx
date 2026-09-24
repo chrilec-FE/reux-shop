@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '@/lib/format';
+import { PRODUCT_CATEGORIES } from '@/lib/catalog';
 
-const empty = { name: '', price: '', category: 'T-Shirts', sizes: 'S,M,L,XL', stock: '0', image_url: '', description: '' };
+const empty = { name: '', price: '', category: 'Men', sizes: 'S,M,L,XL', stock: '0', image_url: '', description: '' };
 
 export default function ProductManager() {
   const [products, setProducts] = useState([]);
@@ -71,6 +72,8 @@ export default function ProductManager() {
     setError('');
   };
 
+  const categoryOptions = [...PRODUCT_CATEGORIES, ...new Set(products.map((product) => product.category).filter((category) => category && !PRODUCT_CATEGORIES.includes(category)))];
+
   const remove = async (id) => {
     if (!confirm('Delete this product?')) return;
     await fetch(`/api/products/${id}`, { method: 'DELETE' });
@@ -97,7 +100,9 @@ export default function ProductManager() {
         </div>
         <div>
           <label className="label">Category</label>
-          <input className="input" value={form.category} onChange={set('category')} />
+          <select className="input" value={form.category} onChange={set('category')} required>
+            {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}
+          </select>
         </div>
         <div>
           <label className="label">Sizes (comma separated)</label>
