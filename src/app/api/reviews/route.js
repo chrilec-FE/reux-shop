@@ -8,13 +8,35 @@ async function userFromRequest(req) {
   return data.user || null;
 }
 
+async function hasPurchasedProduct(userId, productId) {
+  const { data: orders, error } = await supabaseAdmin
+    .from('orders')
+    .select('items')
+    .eq('user_id', userId)
+    .eq('status', 'paid');
+  if (error) throw error;
+
+  return (orders || []).some((order) => (
+    Array.isArray(order.items) && order.items.some((item) => String(item?.id) === String(productId))
+  ));
+}
+
 export async function GET(req) {
   if (!supabaseAdmin) return NextResponse.json({ reviews: [] });
   const productId = new URL(req.url).searchParams.get('productId');
   if (!productId) return NextResponse.json({ error: 'Product is required' }, { status: 400 });
   const { data, error } = await supabaseAdmin.from('product_reviews').select('id, product_id, user_id, rating, body, created_at').eq('product_id', productId).order('created_at', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ reviews: data || [] });
+  const user = await userFromRequest(req);
+  let eligible = false;
+  if (user) {
+    try {
+      eligible = await hasPurchasedProduct(user.id, productId);
+    } catch (purchaseError) {
+      return NextResponse.json({ error: purchaseError.message }, { status: 500 });
+    }
+  }
+  return NextResponse.json({ reviews: data || [], eligible });
 }
 
 export async function POST(req) {
@@ -24,6 +46,13 @@ export async function POST(req) {
   const { productId, rating, body } = await req.json();
   if (!productId || !Number.isInteger(Number(rating)) || Number(rating) < 1 || Number(rating) > 5 || !body?.trim()) {
     return NextResponse.json({ error: 'Product, rating, and review text are required' }, { status: 400 });
+  }
+  try {
+    if (!(await hasPurchasedProduct(user.id, productId))) {
+      return NextResponse.json({ error: 'Only customers who purchased this product can review it' }, { status: 403 });
+    }
+  } catch (purchaseError) {
+    return NextResponse.json({ error: purchaseError.message }, { status: 500 });
   }
   const { data, error } = await supabaseAdmin.from('product_reviews').upsert({ product_id: productId, user_id: user.id, rating: Number(rating), body: body.trim() }, { onConflict: 'product_id,user_id' }).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
