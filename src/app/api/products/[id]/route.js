@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { checkAdminRequest } from '@/lib/admin-auth';
+import { normalizeImageList } from '@/lib/images';
 
 export async function PUT(req, { params }) {
   if (!checkAdminRequest(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!supabaseAdmin) return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
   const body = await req.json();
-  const allowed = ['name', 'price', 'description', 'category', 'sizes', 'stock', 'image_url'];
+  const allowed = ['name', 'price', 'description', 'category', 'sizes', 'stock', 'image_url', 'images'];
   const update = Object.fromEntries(Object.entries(body).filter(([key]) => allowed.includes(key)));
+  if (update.images !== undefined && !Array.isArray(update.images)) return NextResponse.json({ error: 'Invalid images list' }, { status: 400 });
+  if (update.images !== undefined) {
+    update.images = normalizeImageList(update.images);
+    update.image_url = update.images[0] || '';
+  }
   if (update.name !== undefined) update.name = String(update.name).trim();
   if (update.price !== undefined) update.price = Number(update.price);
   if (update.stock !== undefined) update.stock = Number(update.stock);

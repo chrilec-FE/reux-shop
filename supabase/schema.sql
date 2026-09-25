@@ -10,6 +10,7 @@ create table if not exists public.products (
   sizes text[] default '{}',
   stock integer not null default 0 check (stock >= 0),
   image_url text default '',
+  images jsonb not null default '[]'::jsonb,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -35,6 +36,10 @@ create table if not exists public.orders (
 );
 
 alter table public.products add column if not exists updated_at timestamptz default now();
+alter table public.products add column if not exists images jsonb not null default '[]'::jsonb;
+update public.products
+set images = jsonb_build_array(image_url)
+where coalesce(image_url, '') <> '' and (images is null or images = '[]'::jsonb);
 alter table public.orders add column if not exists customer_email text;
 alter table public.orders add column if not exists customer_name text;
 alter table public.orders add column if not exists customer_phone text;
@@ -80,12 +85,27 @@ create table if not exists public.coupons (
   created_at timestamptz default now()
 );
 
+create table if not exists public.return_requests (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  reason text,
+  status text not null default 'requested' check (status in ('requested', 'approved', 'completed', 'rejected')),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create unique index if not exists return_requests_one_active_per_order
+  on public.return_requests(order_id)
+  where status <> 'rejected';
+
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
 alter table public.user_carts enable row level security;
 alter table public.wishlists enable row level security;
 alter table public.product_reviews enable row level security;
 alter table public.coupons enable row level security;
+alter table public.return_requests enable row level security;
 
 drop policy if exists "products readable by everyone" on public.products;
 drop policy if exists "users read own orders" on public.orders;
@@ -137,3 +157,13 @@ begin
   return true;
 end;
 $$;
+
+-- Product image uploads use the server-side service role; storefront reads are public.
+insert into storage.buckets (id, name, public)
+values ('product-images', 'product-images', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "Public product images are readable" on storage.objects;
+create policy "Public product images are readable"
+  on storage.objects for select
+  using (bucket_id = 'product-images');

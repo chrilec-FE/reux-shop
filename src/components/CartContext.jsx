@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { getProductImages } from '@/lib/images';
 
 const CartContext = createContext(null);
 
@@ -54,7 +55,7 @@ export function CartProvider({ children }) {
       }
       return [
         ...prev,
-        { key, id: product.id, name: product.name, price: product.price, image_url: product.image_url, size: size || null, qty }
+        { key, id: product.id, name: product.name, price: product.price, image_url: getProductImages(product)[0] || '', images: getProductImages(product), size: size || null, qty }
       ];
     });
   }, []);

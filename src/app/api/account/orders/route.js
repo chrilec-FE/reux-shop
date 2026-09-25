@@ -18,11 +18,26 @@ export async function GET(req) {
 
   const { data, error } = await supabaseAdmin
     .from('orders')
-    .select('id, items, total, status, created_at')
+    .select('id, items, total, status, created_at, updated_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ orders: data || [] });
+
+  const orders = data || [];
+  const orderIds = orders.map((order) => order.id);
+  let returnRequests = [];
+  if (orderIds.length > 0) {
+    const { data: requests } = await supabaseAdmin
+      .from('return_requests')
+      .select('id, order_id, status, reason, created_at')
+      .in('order_id', orderIds)
+      .neq('status', 'rejected');
+    returnRequests = requests || [];
+  }
+  const requestMap = new Map(returnRequests.map((request) => [request.order_id, request]));
+  return NextResponse.json({
+    orders: orders.map((order) => ({ ...order, return_request: requestMap.get(order.id) || null }))
+  });
 }
 
 export async function PATCH(req) {

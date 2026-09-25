@@ -1,12 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { formatCurrency } from '@/lib/format';
 import { PRODUCT_CATEGORIES } from '@/lib/catalog';
 import { Skeleton } from '@/components/LoadingSkeleton';
+import { getProductImages } from '@/lib/images';
 
-const empty = { name: '', price: '', category: 'Men', sizes: 'S,M,L,XL', stock: '0', image_url: '', description: '' };
+const empty = { name: '', price: '', category: 'Men', sizes: 'S,M,L,XL', stock: '0', images: [], description: '' };
 
 export default function ProductManager() {
   const [products, setProducts] = useState([]);
@@ -15,6 +16,9 @@ export default function ProductManager() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef(null);
 
   const load = async () => {
     const res = await fetch('/api/products');
@@ -40,7 +44,7 @@ export default function ProductManager() {
         category: form.category,
         sizes: form.sizes.split(',').map((s) => s.trim()).filter(Boolean),
         stock: parseInt(form.stock) || 0,
-        image_url: form.image_url,
+        images: form.images,
         description: form.description
       })
     });
@@ -63,19 +67,52 @@ export default function ProductManager() {
       category: product.category || '',
       sizes: (product.sizes || []).join(','),
       stock: String(product.stock ?? 0),
-      image_url: product.image_url || '',
+      images: getProductImages(product),
       description: product.description || ''
     });
+    setNewImageUrl('');
     setError('');
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setForm(empty);
+    setNewImageUrl('');
     setError('');
   };
 
   const categoryOptions = [...PRODUCT_CATEGORIES, ...new Set(products.map((product) => product.category).filter((category) => category && !PRODUCT_CATEGORIES.includes(category)))];
+
+  const addImageUrl = () => {
+    const value = newImageUrl.trim();
+    if (!value || form.images.includes(value)) return;
+    setForm((current) => ({ ...current, images: [...current.images, value] }));
+    setNewImageUrl('');
+  };
+
+  const removeImage = (image) => {
+    setForm((current) => ({ ...current, images: current.images.filter((entry) => entry !== image) }));
+  };
+
+  const uploadImage = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setError('');
+    setUploadingImage(true);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const response = await fetch('/api/products/images', { method: 'POST', body });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not upload image');
+      setForm((current) => ({ ...current, images: [...current.images, data.url] }));
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const remove = async (id) => {
     if (!confirm('Delete this product?')) return;
@@ -112,8 +149,24 @@ export default function ProductManager() {
           <input className="input" value={form.sizes} onChange={set('sizes')} />
         </div>
         <div>
-          <label className="label">Image URL</label>
-          <input className="input" type="url" value={form.image_url} onChange={set('image_url')} placeholder="https://…" />
+          <label className="label">Product images</label>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input className="input" type="url" value={newImageUrl} onChange={(event) => setNewImageUrl(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addImageUrl(); } }} placeholder="https:// image URL" />
+            <button type="button" className="btn-secondary shrink-0" onClick={addImageUrl}>Add URL</button>
+            <button type="button" className="btn-secondary shrink-0" onClick={() => fileInputRef.current?.click()} disabled={uploadingImage}>{uploadingImage ? 'Uploading…' : 'Upload'}</button>
+            <input ref={fileInputRef} className="hidden" type="file" accept="image/*" capture="environment" onChange={uploadImage} />
+          </div>
+          <p className="mt-1 text-xs text-neutral-500">Upload also offers Take photo on supported phones.</p>
+          {form.images.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {form.images.map((image) => (
+                <div key={image} className="relative h-20 w-16 overflow-hidden rounded-md border border-neutral-200 bg-neutral-100">
+                  <img src={image} alt="" className="h-full w-full object-cover" />
+                  <button type="button" onClick={() => removeImage(image)} className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-900/80 text-xs text-white" aria-label="Remove image">×</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div>
           <label className="label">Description</label>
@@ -132,7 +185,7 @@ export default function ProductManager() {
         {loading ? Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-24" />) : products.map((p) => (
           <div key={p.id} className="card flex items-center gap-4 p-4">
             <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded bg-neutral-100">
-              {p.image_url && <Image src={p.image_url} alt={p.name} fill className="object-cover" sizes="56px" />}
+              {getProductImages(p)[0] && <Image src={getProductImages(p)[0]} alt={p.name} fill className="object-cover" sizes="56px" />}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{p.name}</p>
@@ -143,7 +196,7 @@ export default function ProductManager() {
             <button onClick={() => remove(p.id)} className="text-sm text-red-600 underline">Delete</button>
           </div>
         ))}
-        {products.length === 0 && (
+        {!loading && products.length === 0 && (
           <p className="rounded-lg border border-dashed border-neutral-300 p-8 text-center text-neutral-500">No products yet.</p>
         )}
       </div>

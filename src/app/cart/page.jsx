@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useCart } from '@/components/CartContext';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/format';
+import { getProductImages } from '@/lib/images';
 
 export default function CartPage() {
   const { items, setQty, remove } = useCart();
@@ -122,7 +123,7 @@ export default function CartPage() {
           {items.map((i) => (
             <div key={i.key} className="flex gap-4 py-4">
               <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded bg-neutral-100">
-                {i.image_url && <Image src={i.image_url} alt={i.name} fill className="object-cover" sizes="80px" />}
+                {getProductImages(i)[0] && <Image src={getProductImages(i)[0]} alt={i.name} fill className="object-cover" sizes="80px" />}
               </div>
               <div className="flex flex-1 flex-col">
                 <div className="flex items-start justify-between">

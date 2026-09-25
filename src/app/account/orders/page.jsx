@@ -18,6 +18,17 @@ const statusDetails = {
   refunded: { label: 'Refunded', className: 'bg-red-100 text-red-700' }
 };
 
+const RETURNABLE_STATUSES = ['paid', 'packaging', 'shipped', 'received'];
+const RETURN_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+
+function orderAgeTimestamp(order) {
+  return Math.max(new Date(order.updated_at || 0).getTime(), new Date(order.created_at || 0).getTime());
+}
+
+function isReturnEligible(order) {
+  return RETURNABLE_STATUSES.includes(order.status) && Date.now() - orderAgeTimestamp(order) < RETURN_WINDOW_MS;
+}
+
 export default function AccountOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
@@ -25,6 +36,7 @@ export default function AccountOrdersPage() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [undoIds, setUndoIds] = useState({});
+  const [returningId, setReturningId] = useState(null);
 
   const loadOrders = async () => {
     const session = supabase ? (await supabase.auth.getSession()).data.session : null;
@@ -134,6 +146,35 @@ export default function AccountOrdersPage() {
     setError('');
   };
 
+  const handleReturnRequest = async (order) => {
+    const confirmed = window.confirm('We\'ll review your request and provide return instructions. Returns must be unused with tags, within 14 days. Return shipping is paid by the customer.');
+    if (!confirmed) return;
+
+    const reason = window.prompt('Optional reason for your return:') || '';
+    const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+    if (!session) {
+      router.replace('/login');
+      return;
+    }
+
+    setReturningId(order.id);
+    setError('');
+    const res = await fetch('/api/returns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ orderId: order.id, reason })
+    });
+    const data = await res.json();
+    setReturningId(null);
+    if (!res.ok) {
+      setError(data.error || 'Could not request return');
+      return;
+    }
+
+    setOrders((current) => current.map((item) => item.id === order.id ? { ...item, return_request: data.request } : item));
+    setNotice('Return request submitted.');
+  };
+
   if (loading) return <div className="py-8" aria-label="Loading orders"><Skeleton className="h-8 w-40" /><div className="mt-8 space-y-4"><Skeleton className="h-36" /><Skeleton className="h-36" /><Skeleton className="h-36" /></div></div>;
 
   return (
@@ -151,6 +192,8 @@ export default function AccountOrdersPage() {
             const status = statusDetails[order.status] || statusDetails.pending;
             const isUndoVisible = undoIds[order.id] && order.status === 'received';
             const showDelete = order.status === 'received';
+            const hasReturnRequest = Boolean(order.return_request);
+            const showReturnButton = hasReturnRequest || isReturnEligible(order);
             return (
               <article key={order.id} className="card p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -201,6 +244,19 @@ export default function AccountOrdersPage() {
                       className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
                     >
                       Delete
+                    </button>
+                  </div>
+                )}
+
+                {showReturnButton && (
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      disabled={hasReturnRequest || returningId === order.id}
+                      onClick={() => handleReturnRequest(order)}
+                      className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-800 transition hover:border-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {hasReturnRequest ? 'Return requested' : returningId === order.id ? 'Submitting…' : 'Request return'}
                     </button>
                   </div>
                 )}

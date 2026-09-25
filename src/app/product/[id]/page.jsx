@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getProduct } from '@/lib/products';
 import AddToCart from '@/components/AddToCart';
 import WishlistButton from '@/components/WishlistButton';
 import ProductReviews from '@/components/ProductReviews';
+import ProductGallery from '@/components/ProductGallery';
 import { formatCurrency } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
@@ -14,13 +14,7 @@ export default async function ProductPage({ params }) {
 
   return (
     <div className="grid gap-10 md:grid-cols-2">
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-neutral-100">
-        {product.image_url ? (
-          <Image src={product.image_url} alt={product.name} fill className="object-cover" sizes="(max-width:768px) 100vw, 50vw" priority />
-        ) : (
-          <div className="flex h-full items-center justify-center text-neutral-300">No image</div>
-        )}
-      </div>
+      <ProductGallery product={product} />
       <div>
         <p className="text-[11px] font-medium uppercase tracking-wide text-neutral-400">{product.category}</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight">{product.name}</h1>
