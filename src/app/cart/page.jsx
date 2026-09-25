@@ -8,6 +8,16 @@ import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/format';
 import { getProductImages } from '@/lib/images';
 
+async function readResponse(response, fallback) {
+  const text = await response.text();
+  if (!text) return { error: fallback };
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: fallback };
+  }
+}
+
 export default function CartPage() {
   const { items, setQty, remove } = useCart();
   const [loading, setLoading] = useState(false);
@@ -64,7 +74,7 @@ export default function CartPage() {
         headers: { 'Content-Type': 'application/json', ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
         body: JSON.stringify({ items: items.map((i) => ({ id: i.id, qty: i.qty, size: i.size })), couponCode: coupon?.code || null })
       });
-      const data = await res.json();
+      const data = await readResponse(res, 'Item out of stock');
       if (!res.ok) throw new Error(data.error || 'Checkout failed');
       window.location.href = data.url;
     } catch (e) {
@@ -85,7 +95,7 @@ export default function CartPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify(profile)
       });
-      const data = await res.json();
+      const data = await readResponse(res, 'Could not save your details. Please try again.');
       if (!res.ok) throw new Error(data.error || 'Could not save your details');
       setProfile(data.profile);
       setEditingProfile(false);
@@ -99,7 +109,7 @@ export default function CartPage() {
   const applyCoupon = async () => {
     setCouponError('');
     const res = await fetch('/api/coupons', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: couponCode }) });
-    const data = await res.json();
+    const data = await readResponse(res, 'Could not apply the coupon. Please try again.');
     if (!res.ok) return setCouponError(data.error || 'Invalid coupon');
     setCoupon(data);
   };
