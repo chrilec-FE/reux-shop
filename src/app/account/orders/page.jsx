@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/format';
+import { Skeleton } from '@/components/LoadingSkeleton';
 
 const statusDetails = {
   pending: { label: 'Waiting for payment', className: 'bg-neutral-100 text-neutral-600' },
@@ -133,7 +134,7 @@ export default function AccountOrdersPage() {
     setError('');
   };
 
-  if (loading) return <p className="py-20 text-center text-neutral-500">Loading orders…</p>;
+  if (loading) return <div className="py-8" aria-label="Loading orders"><Skeleton className="h-8 w-40" /><div className="mt-8 space-y-4"><Skeleton className="h-36" /><Skeleton className="h-36" /><Skeleton className="h-36" /></div></div>;
 
   return (
     <div>

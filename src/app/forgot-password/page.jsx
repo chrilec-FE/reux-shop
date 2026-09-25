@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import AuthLogo from '@/components/AuthLogo';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -30,6 +31,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="animate-rise mx-auto max-w-sm py-10">
+      <div className="mb-8 flex justify-center"><AuthLogo /></div>
       <h1 className="text-2xl font-bold tracking-tight">Forgot password</h1>
       <p className="mt-2 text-sm text-neutral-500">Enter your email and we’ll send a reset link.</p>
 

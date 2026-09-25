@@ -11,7 +11,8 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-displ
 
 export const metadata = {
   title: 'ReUX — Modern Clothing',
-  description: 'Clean, minimal clothing. Built different.'
+  description: 'Clean, minimal clothing. Built different.',
+  icons: { icon: '/icon.svg' }
 };
 
 export default function RootLayout({ children }) {

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '@/lib/format';
 import { PRODUCT_CATEGORIES } from '@/lib/catalog';
+import { Skeleton } from '@/components/LoadingSkeleton';
 
 const empty = { name: '', price: '', category: 'Men', sizes: 'S,M,L,XL', stock: '0', image_url: '', description: '' };
 
@@ -13,11 +14,13 @@ export default function ProductManager() {
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
     const res = await fetch('/api/products');
     const data = await res.json();
     setProducts(data.products || []);
+    setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
@@ -126,7 +129,7 @@ export default function ProductManager() {
       </form>
 
       <div className="space-y-3">
-        {products.map((p) => (
+        {loading ? Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-24" />) : products.map((p) => (
           <div key={p.id} className="card flex items-center gap-4 p-4">
             <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded bg-neutral-100">
               {p.image_url && <Image src={p.image_url} alt={p.name} fill className="object-cover" sizes="56px" />}

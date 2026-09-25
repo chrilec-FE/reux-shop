@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/format';
+import { Skeleton } from '@/components/LoadingSkeleton';
 
 export default function AccountPage() {
   const [user, setUser] = useState(null);
@@ -29,7 +30,7 @@ export default function AccountPage() {
     });
   }, []);
 
-  if (loading) return <p className="py-20 text-center text-neutral-500">Loading…</p>;
+  if (loading) return <div className="py-8" aria-label="Loading account"><Skeleton className="h-8 w-40" /><div className="mt-8 grid gap-4 sm:grid-cols-2"><Skeleton className="h-28" /><Skeleton className="h-28" /></div><Skeleton className="mt-8 h-32" /></div>;
 
   if (!supabase) {
     return (

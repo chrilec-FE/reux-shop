@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import AccountDrawer from './AccountDrawer';
 import ThemeToggle from './ThemeToggle';
 import AdminDashboardButton from '@/components/admin/AdminDashboardButton';
+import BrandMark from './BrandMark';
 
 export default function Navbar({ isAdmin = false }) {
   const { count } = useCart();
@@ -14,7 +15,7 @@ export default function Navbar({ isAdmin = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const adminArea = pathname.startsWith('/admin');
-  const standaloneAuthPages = ['/login', '/forgot-password', '/account/reset-password'];
+  const standaloneAuthPages = ['/login', '/admin/login', '/forgot-password', '/account/reset-password'];
   const customerView = !isAdmin && !adminArea && !standaloneAuthPages.includes(pathname);
 
   if (standaloneAuthPages.includes(pathname)) return null;
@@ -28,8 +29,8 @@ export default function Navbar({ isAdmin = false }) {
   return (
     <header className="border-b border-neutral-200 bg-white">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-        <Link href={adminArea || isAdmin ? '/admin' : '/'} className="text-xl font-bold tracking-tight">
-          Re<span className="text-neutral-400">UX</span>
+        <Link href={adminArea || isAdmin ? '/admin' : '/'} aria-label="ReUX home" className="rounded-md">
+          <BrandMark />
         </Link>
         {customerView && <form action="/shop" className="mx-6 hidden min-w-0 max-w-xs flex-1 gap-2 sm:flex">
           <label htmlFor="nav-search" className="sr-only">Search products</label>

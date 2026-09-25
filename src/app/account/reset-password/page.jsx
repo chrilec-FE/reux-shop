@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import AuthLogo from '@/components/AuthLogo';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -74,6 +75,7 @@ export default function ResetPasswordPage() {
   if (!validSession) {
     return (
       <div className="animate-rise mx-auto max-w-sm py-10">
+        <div className="mb-8 flex justify-center"><AuthLogo /></div>
         <div className="card p-8 text-center">
           <h1 className="text-2xl font-bold tracking-tight">Reset password</h1>
           <p className="mt-4 text-sm text-neutral-600">This reset link is invalid or has expired, request a new one.</p>
@@ -85,6 +87,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="animate-rise mx-auto max-w-md py-10">
+      <div className="mb-8 flex justify-center"><AuthLogo /></div>
       <h1 className="text-2xl font-bold tracking-tight">Set a new password</h1>
       <form onSubmit={submit} className="mt-6 space-y-4">
         <div>

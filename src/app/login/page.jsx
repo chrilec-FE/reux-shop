@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import AuthLogo from '@/components/AuthLogo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -63,6 +64,7 @@ export default function LoginPage() {
 
   return (
     <div className="animate-rise mx-auto max-w-sm py-10">
+      <div className="mb-8 flex justify-center"><AuthLogo /></div>
       <h1 className="text-2xl font-bold tracking-tight">{mode === 'signin' ? 'Sign in' : 'Create account'}</h1>
       <form onSubmit={submit} className="mt-6 space-y-4">
         {mode === 'signup' && (

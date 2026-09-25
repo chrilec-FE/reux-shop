@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { formatCurrency } from '@/lib/format';
+import { Skeleton } from '@/components/LoadingSkeleton';
 
 const STATUSES = ['pending', 'paid', 'payment_review', 'shipped', 'received', 'canceled', 'refunded'];
 const SALES_VISIBLE_STATUSES = STATUSES.filter((status) => !['shipped', 'received'].includes(status));
@@ -94,7 +95,7 @@ export default function SalesManager({ mode = 'sales' }) {
     return isVisibleInMode && matchesSearch && matchesStatus;
   });
 
-  if (loading) return <p className="mt-8 text-neutral-500">Loading…</p>;
+  if (loading) return <div className="mt-6 space-y-3" aria-label="Loading orders"><Skeleton className="h-10" /><Skeleton className="h-44" /><Skeleton className="h-44" /></div>;
 
   if (error && orders.length === 0) return <p className="mt-8 text-sm text-red-600">{error}</p>;
 
