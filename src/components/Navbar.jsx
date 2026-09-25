@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AccountDrawer from './AccountDrawer';
 import ThemeToggle from './ThemeToggle';
+import AdminDashboardButton from '@/components/admin/AdminDashboardButton';
 
 export default function Navbar({ isAdmin = false }) {
   const { count } = useCart();
@@ -13,7 +14,10 @@ export default function Navbar({ isAdmin = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const adminArea = pathname.startsWith('/admin');
-  const customerView = !isAdmin && !adminArea;
+  const standaloneAuthPages = ['/login', '/forgot-password', '/account/reset-password'];
+  const customerView = !isAdmin && !adminArea && !standaloneAuthPages.includes(pathname);
+
+  if (standaloneAuthPages.includes(pathname)) return null;
 
   const logout = async () => {
     await fetch('/api/auth/admin-logout', { method: 'POST' });
@@ -34,9 +38,9 @@ export default function Navbar({ isAdmin = false }) {
         </form>}
         <nav className="flex items-center gap-6 text-sm font-medium">
           {customerView && <>
-            <Link href="/account/orders" title="My orders" aria-label="My orders" className="text-lg leading-none" >📦</Link>
-            <Link href="/shop" className="text-neutral-600 hover:text-neutral-900">Shop</Link>
-            <Link href="/cart" className="relative text-neutral-600 hover:text-neutral-900">
+            <Link href="/account/orders" title="My orders" aria-label="My orders" className="text-lg leading-none transition hover:opacity-80" >📦</Link>
+            <Link href="/shop" className="text-neutral-600 transition hover:text-neutral-900 hover:opacity-80">Shop</Link>
+            <Link href="/cart" className="relative text-neutral-600 transition hover:text-neutral-900 hover:opacity-80">
               Cart
               {count > 0 && (
                 <span className="absolute -right-4 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-[10px] text-white">
@@ -44,11 +48,12 @@ export default function Navbar({ isAdmin = false }) {
                 </span>
               )}
             </Link>
-            <Link href="/wishlist" className="text-neutral-600 hover:text-neutral-900">Wishlist</Link>
-            <button onClick={() => setAccountOpen(true)} className="text-neutral-600 hover:text-neutral-900">Account</button>
+            <Link href="/wishlist" className="text-neutral-600 transition hover:text-neutral-900 hover:opacity-80">Wishlist</Link>
+            <button onClick={() => setAccountOpen(true)} className="text-neutral-600 transition hover:text-neutral-900 hover:opacity-80">Account</button>
           </>}
           <ThemeToggle />
-          {isAdmin && <button onClick={logout} className="text-red-600 hover:text-red-700">Log out</button>}
+          {isAdmin && <AdminDashboardButton variant="nav" />}
+          {isAdmin && <button onClick={logout} className="text-red-600 transition hover:text-red-700 hover:opacity-80">Log out</button>}
         </nav>
       </div>
       {customerView && <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} />}

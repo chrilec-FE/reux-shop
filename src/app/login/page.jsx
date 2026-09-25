@@ -107,6 +107,13 @@ export default function LoginPage() {
           <label className="label">Password</label>
             <div className="relative"><input className="input pr-16" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /><button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Hide' : 'Show'}</button></div>
         </div>
+        {mode === 'signin' && (
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-xs text-neutral-500 underline underline-offset-2 hover:text-neutral-700">
+              Forgot password?
+            </Link>
+          </div>
+        )}
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button className="btn-primary w-full" disabled={loading}>
           {loading ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}

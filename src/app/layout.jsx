@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { CartProvider } from '@/components/CartContext';
+import AdminFloatingActions from '@/components/admin/AdminFloatingActions';
 import { verifyAdmin } from '@/lib/admin-auth';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
@@ -22,6 +23,7 @@ export default function RootLayout({ children }) {
         <CartProvider>
           <Navbar isAdmin={isAdmin} />
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+          <AdminFloatingActions isAdmin={isAdmin} />
           <Footer />
         </CartProvider>
       </body>

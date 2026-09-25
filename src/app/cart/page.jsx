@@ -133,14 +133,32 @@ export default function CartPage() {
                   <p className="font-medium">{formatCurrency(Number(i.price) * i.qty)}</p>
                 </div>
                 <div className="mt-auto flex items-center gap-3">
-                  <input
-                    type="number"
-                    min="1"
-                    value={i.qty}
-                    onChange={(e) => setQty(i.key, parseInt(e.target.value) || 1)}
-                    className="input w-20"
-                  />
-                  <button onClick={() => remove(i.key)} className="text-sm text-neutral-400 underline hover:text-neutral-900">
+                  <div className="inline-flex items-center overflow-hidden rounded-md border border-neutral-300 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => setQty(i.key, Math.max(1, i.qty - 1))}
+                      className="flex h-9 w-9 items-center justify-center text-lg text-neutral-700 transition hover:bg-neutral-100"
+                      aria-label={`Decrease quantity for ${i.name}`}
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={i.qty}
+                      onChange={(e) => setQty(i.key, parseInt(e.target.value) || 1)}
+                      className="h-9 w-12 border-x border-neutral-300 bg-white px-2 text-center text-sm outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setQty(i.key, i.qty + 1)}
+                      className="flex h-9 w-9 items-center justify-center text-lg text-neutral-700 transition hover:bg-neutral-100"
+                      aria-label={`Increase quantity for ${i.name}`}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button onClick={() => remove(i.key)} className="text-sm font-medium text-red-500 transition hover:text-red-400">
                     Remove
                   </button>
                 </div>

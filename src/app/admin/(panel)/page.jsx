@@ -56,6 +56,7 @@ export default async function AdminDashboard() {
     { label: 'Cancelled', value: stats.cancelled, className: 'bg-neutral-400' },
     { label: 'Refunded', value: stats.refundedOrders, className: 'bg-red-500' }
   ];
+  const hasSales = chartDays.some((day) => day.income > 0);
   const maxIncome = Math.max(...chartDays.map((day) => day.income), 1);
 
   return (
@@ -79,20 +80,28 @@ export default async function AdminDashboard() {
             </div>
             <p className="text-sm font-semibold text-green-600">{formatCurrency(stats.income)}</p>
           </div>
-          <div className="mt-6 flex h-44 items-end gap-1 border-b border-neutral-200 px-1">
-            {chartDays.map((day) => (
-              <div key={day.key} className="group flex h-full flex-1 items-end" title={`${day.label}: ${formatCurrency(day.income)}`}>
-                <div
-                  className="w-full rounded-t-sm bg-blue-500 transition hover:bg-blue-600"
-                  style={{ height: `${Math.max((day.income / maxIncome) * 100, day.income ? 3 : 0)}%` }}
-                />
+          {!hasSales ? (
+            <div className="mt-8 flex h-32 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-sm text-neutral-500">
+              No sales yet
+            </div>
+          ) : (
+            <>
+              <div className="mt-6 flex h-44 items-end gap-1 border-b border-neutral-200 px-1">
+                {chartDays.map((day) => (
+                  <div key={day.key} className="group flex h-full flex-1 items-end" title={`${day.label}: ${formatCurrency(day.income)}`}>
+                    <div
+                      className="w-full rounded-t-sm bg-blue-500 transition hover:bg-blue-600"
+                      style={{ height: `${Math.max((day.income / maxIncome) * 100, day.income ? 3 : 0)}%` }}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div className="mt-2 flex justify-between text-[11px] text-neutral-400">
-            <span>{chartDays[0].label}</span>
-            <span>{chartDays[chartDays.length - 1].label}</span>
-          </div>
+              <div className="mt-2 flex justify-between text-[11px] text-neutral-400">
+                <span>{chartDays[0].label}</span>
+                <span>{chartDays[chartDays.length - 1].label}</span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="card p-5">
@@ -121,8 +130,8 @@ export default async function AdminDashboard() {
       {recent.length === 0 ? (
         <p className="rounded-lg border border-dashed border-neutral-300 p-8 text-center text-neutral-500">No orders yet.</p>
       ) : (
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="card overflow-x-auto">
+          <table className="min-w-[640px] w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-200 text-left text-xs uppercase tracking-wide text-neutral-400">
                 <th className="px-4 py-3">Date</th>

@@ -1,10 +1,12 @@
-import AdminDashboardButton from '@/components/admin/AdminDashboardButton';
+'use client';
+
+import AdminAutoRefresh from '@/components/admin/AdminAutoRefresh';
 
 export default function AdminLayout({ children }) {
   return (
     <>
+      <AdminAutoRefresh />
       {children}
-      <AdminDashboardButton />
     </>
   );
 }

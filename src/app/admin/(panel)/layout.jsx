@@ -12,7 +12,8 @@ export default function AdminPanelLayout({ children }) {
   const nav = [
     { href: '/admin', label: 'Dashboard' },
     { href: '/admin/products', label: 'Products' },
-    { href: '/admin/sales', label: 'Sales' }
+    { href: '/admin/sales', label: 'Sales' },
+    { href: '/admin/shipped', label: 'Shipped' }
   ];
 
   return (
